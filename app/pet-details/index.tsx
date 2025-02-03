@@ -9,6 +9,7 @@ import {useFavourite} from "@/hooks/useFavourite";
 import {useUser} from "@clerk/clerk-expo";
 import {collection, doc, getDocs, query, setDoc, where} from "@firebase/firestore";
 import {db} from "@/firebase.config";
+import {cn} from "@/lib/cn";
 
 
 const Feature = ({title, url, value}: {
@@ -68,7 +69,7 @@ function PetName(props: { pet: petType }) {
             </Text>
             <View className={"flex flex-row items-center overflow-hidden w-10/12"}>
                 <Ionicons name={"location-outline"} size={24} color={"#000"}/>
-                <Text className={"text-[10rem] "}>
+                <Text className={"text-['10rem'] "}>
                     {props.pet.streetAddress}
                 </Text>
             </View>
@@ -142,56 +143,69 @@ function OwnerDetails(props: { pet: petType }) {
     </View>;
 }
 
+
 interface AdoptMeBtnProps {
     pet?: petType
 }
 
+
 function AdoptMeBtn({pet}: AdoptMeBtnProps) {
     const {user} = useUser()
     const router = useRouter()
+            const userEmail = user?.primaryEmailAddress?.emailAddress
     const initiateChat = async () => {
-        const userEmail = user?.primaryEmailAddress?.emailAddress
-        if (userEmail === pet?.email) {
-            return Alert.alert("You can't adopt your own pet")
+        try {
+            if (userEmail === pet?.email) {
+                return Alert.alert("You can't adopt your own pet")
 
+            } else if (!pet?.email){
+                return Alert.alert("This pet owner is not available for communication")
+            }
+
+            const docID1 = `${userEmail}_${pet?.email}`
+            const docID2 = `${pet?.email}_${userEmail}`
+
+            const q = query(collection(db, 'Chats'), where('id', 'in', [docID1, docID2]))
+            const querySnapshot = await getDocs(q)
+            if (querySnapshot.empty) {
+                await setDoc(doc(db, 'Chats', docID1), {
+                    id: docID1,
+                    users: [{
+                        email: userEmail,
+                        imageUrl: user?.imageUrl,
+                        name: user?.fullName
+                    }, {
+                        email: pet?.email,
+                        imageUrl: pet?.ownerImageUrl,
+                        name: pet?.ownerName
+                    }],
+                    userIds: [userEmail, pet?.email]
+                })
+                router.push({
+                    pathname: "/Chat",
+                    params: {
+                        id: docID1
+                    }
+                })
+            } else {
+                router.push({
+                    pathname: "/Chat",
+                    params: querySnapshot.docs.map(docs => docs.data()).at(0)
+                })
+            }
+
+
+        } catch (error) {
+            console.error(error)
         }
-        const docID1 = `${userEmail}_${pet?.email}`
-        const docID2 = `${pet?.email}_${userEmail}`
-
-        const q = query(collection(db, 'Chats'), where('id', 'in', [docID1, docID2]))
-        const querySnapshot = await getDocs(q)
-        if (querySnapshot.empty) {
-            await setDoc(doc(db, 'Chats', docID1), {
-                id: docID1,
-                users: [{
-                    email: userEmail,
-                    imageUrl: user?.imageUrl,
-                    name: user?.fullName
-                }, {
-                    email: pet?.email,
-                    imageUrl: pet?.ownerImageUrl,
-                    name: pet?.ownerName
-                }],
-                userIds:[userEmail,pet?.email]
-            })
-            router.push({
-                pathname: "/Chat",
-                params: {
-                    id: docID1
-                }
-            })
-        }else{
-            router.push({
-                pathname: "/Chat",
-                params: querySnapshot.docs.map(docs => docs.data()).at(0)
-            })
-        }
-
-
     }
     return <TouchableOpacity
         onPress={initiateChat}
-        className={"bg-primary h-[9vh] flex justify-center items-center absolute w-full  bottom-0"}>
+        className={cn(" h-[9vh] flex bg-primary justify-center items-center absolute w-full  bottom-0",
+            (!pet?.email ) && "opacity-50",
+            (pet?.email === userEmail ) && "opacity-50"
+
+            )}>
         <Text className={"capitalize font-bold text-lg"}>
             Adopt Me
         </Text>

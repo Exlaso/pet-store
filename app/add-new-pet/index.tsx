@@ -121,7 +121,6 @@ export default function AddNewPet() {
                 const storageRef = ref(storage, '/PetAdopt' + new Date().getTime() + ".jpg")
                 await uploadBytes(storageRef, blobImage)
                 const downloadURL = await getDownloadURL(storageRef)
-                console.log({downloadURL})
                 const docId = new Date().getTime().toString()
 
                 const pet = {

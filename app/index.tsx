@@ -10,7 +10,7 @@ export default function Index() {
         if (rootNavigationState?.key) {
             return <Text>Loading...</Text>
         }
-    }), [])
+    }), [rootNavigationState?.key])
     useEffect(() => {
         CheckNavigationLoading();
     }, [])

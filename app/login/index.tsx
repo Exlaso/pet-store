@@ -8,7 +8,6 @@ import {CONSTANT} from "@/constants";
 
 
 export const useWarmUpBrowser = () => {
-    console.log({Platform:Platform.OS})
     useEffect(() => {
         if (Platform.OS !== 'web') {
             void WebBrowser.warmUpAsync();

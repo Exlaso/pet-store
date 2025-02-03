@@ -1,18 +1,27 @@
-import {useEffect, useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import {collection, getDocs} from "@firebase/firestore";
 import {db} from "@/firebase.config";
-import {Dimensions, FlatList, Image, View} from "react-native";
+import { Dimensions, FlatList, Image, Pressable, Text, View} from "react-native";
 import {docType} from "@/app/(tabs)/home";
+
 
 export function Slider() {
     const [slider, setSlider] = useState<docType[]>([]);
-    const getSliders = useMemo(() => (async () => {
-        setSlider([])
-        const snapshot = await getDocs(collection(db, "Slider"));
-        setSlider(snapshot.docs.map(doc => doc.data() as docType))
-    }), [])
+    const handleClick = async () => {
+        try {
+            setSlider([])
+            const snapshot = await getDocs(collection(db, "Slider"));
+            setSlider(snapshot.docs.map(doc => doc.data() as docType))
+        } catch (error) {
+            console.error("Error getting documents: ", error);
+        }
+    }
+
     useEffect(() => {
-        getSliders().then()
+
+        handleClick().then();
+        return () => {
+        }
     }, [])
     return <View className={"w-full my-5"}>
         <FlatList

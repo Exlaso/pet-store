@@ -1,4 +1,4 @@
-import {SafeAreaView, ScrollView, View} from "react-native";
+import {SafeAreaView, ScrollView} from "react-native";
 import {useUser} from "@clerk/clerk-expo";
 import {useEffect, useState} from "react";
 import {PetsByCategory} from "@/components/petsByCategory";

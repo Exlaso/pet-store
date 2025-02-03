@@ -37,7 +37,6 @@ export default function Profile() {
         setLoading(true)
         const q = query(collection(db, 'Chats'), where('userIds', 'array-contains', userEmail))
         const querySnapshot = await getDocs(q)
-        console.log({querySnapshot: querySnapshot.docs.map(doc => doc.data())})
         setUserList(querySnapshot.docs.map(doc => doc.data() as ChatType))
         setLoading(false)
     }
